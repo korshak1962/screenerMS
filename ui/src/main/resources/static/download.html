@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Download and Status</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+    <style>
+        .ui-datepicker-calendar {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+<h1>Data Download Form</h1>
+<form id="downloadForm">
+    <input type="hidden" id="timeSeriesLabel" name="timeSeriesLabel" value="TIME_SERIES_INTRADAY">
+
+    <label for="ticker">Ticker:</label>
+    <input type="text" id="ticker" name="ticker" required><br><br>
+
+    <label for="month">Month:</label>
+    <input type="text" id="month" name="month" required readonly><br><br>
+
+    <input type="hidden" id="interval" name="interval" value="5min">
+
+    <button type="submit">Download Data</button>
+</form>
+
+<h2>Download Status</h2>
+<div id="status"></div>
+
+<script>
+    $(document).ready(function() {
+        $('#month').datepicker({
+            changeMonth: true,
+            changeYear: true,
+            showButtonPanel: true,
+            dateFormat: 'yy-mm',
+            onClose: function(dateText, inst) {
+                var month = $("#ui-datepicker-div .ui-datepicker-month :selected").val();
+                var year = $("#ui-datepicker-div .ui-datepicker-year :selected").val();
+                $(this).val($.datepicker.formatDate('yy-mm', new Date(year, month, 1)));
+            }
+        });
+
+        $('#downloadForm').submit(function(e) {
+            e.preventDefault();
+            $.ajax({
+                url: '/api/downloader/download',
+                type: 'POST',
+                data: $(this).serialize(),
+                success: function(response) {
+                    alert('Download initiated: ' + response);
+                    checkStatus();
+                },
+                error: function(xhr, status, error) {
+                    alert('Error: ' + error);
+                }
+            });
+        });
+
+        function checkStatus() {
+            var eventSource = new EventSource('/api/downloader/download-status');
+            eventSource.onmessage = function(event) {
+                $('#status').text(event.data);
+                if (event.data === 'Download completed' || event.data.includes('Error')) {
+                    eventSource.close();
+                }
+            };
+            eventSource.onerror = function() {
+                $('#status').text('Error occurred while fetching status');
+                eventSource.close();
+            };
+        }
+    });
+</script>
+</body>
+</html>
