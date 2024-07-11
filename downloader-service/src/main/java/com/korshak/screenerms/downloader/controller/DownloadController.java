@@ -3,6 +3,7 @@ package com.korshak.screenerms.downloader.controller;
 import com.korshak.screenerms.downloader.service.DownLoaderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
@@ -16,7 +17,7 @@ import java.util.concurrent.CompletableFuture;
 public class DownloadController {
     @Autowired
     private DownLoaderService downLoaderService;
-    private CompletableFuture<Integer> downloadFuture;
+    private CompletableFuture<String> downloadFuture;
 
     @PostMapping("/download")
     public ResponseEntity<String> fetchAndSaveData(
@@ -41,10 +42,10 @@ public class DownloadController {
         }
     }
 
-    @GetMapping("/download-status")
+    @GetMapping(value = "/download-status", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter downloadStatus() {
         SseEmitter emitter = new SseEmitter(Long.MAX_VALUE);
-
+       // logger.info("SSE connection attempt received");
         CompletableFuture.runAsync(() -> {
             try {
                 // Send progress updates
@@ -56,12 +57,15 @@ public class DownloadController {
                 Thread.sleep(1000);
 
                 // Wait for the download to complete
-                Integer recordCount = downloadFuture.get();
-
+                String result = downloadFuture.get();
+                System.out.println("result in status: "+result);
                 // Send completion event
-                emitter.send(SseEmitter.event().name("complete").data("Download completed. " + recordCount + " records saved."));
+                emitter.send(SseEmitter.event().name("complete").data("Download completed. " + result + " records saved."));
+                System.out.println("emitter.send: ");
                 emitter.complete();
+                System.out.println("emitter.complete: ");
             } catch (Exception e) {
+                System.out.println("Exception in status: "+e);
                 emitter.completeWithError(e);
             }
         });

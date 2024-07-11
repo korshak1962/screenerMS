@@ -11,6 +11,20 @@
         .ui-datepicker-calendar {
             display: none;
         }
+        #status {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            background-color: #f9f9f9;
+        }
+        #debug {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            background-color: #f0f0f0;
+            white-space: pre-wrap;
+            font-family: monospace;
+        }
     </style>
 </head>
 <body>
@@ -32,7 +46,16 @@
 <h2>Download Status</h2>
 <div id="status"></div>
 
+<h2>Debug Information</h2>
+<div id="debug"></div>
+
 <script>
+    function appendDebug(message) {
+        var debug = $('#debug');
+        debug.append(new Date().toISOString() + ': ' + message + '\n');
+        console.log(message);
+    }
+
     $(document).ready(function() {
         $('#month').datepicker({
             changeMonth: true,
@@ -48,32 +71,61 @@
 
         $('#downloadForm').submit(function(e) {
             e.preventDefault();
+            appendDebug('Form submitted');
+            $('#status').text('Initiating download...');
             $.ajax({
                 url: '/api/downloader/download',
                 type: 'POST',
                 data: $(this).serialize(),
                 success: function(response) {
-                    alert('Download initiated: ' + response);
+                    appendDebug('Download initiated: ' + response);
+                    $('#status').text('Download initiated: ' + response);
                     checkStatus();
                 },
                 error: function(xhr, status, error) {
-                    alert('Error: ' + error);
+                    appendDebug('Error initiating download: ' + error);
+                    $('#status').text('Error initiating download: ' + error);
                 }
             });
         });
 
         function checkStatus() {
+            appendDebug('Attempting to connect to EventSource');
+            $('#status').text('Connecting to status stream...');
             var eventSource = new EventSource('/api/downloader/download-status');
+
+            eventSource.onopen = function(event) {
+                appendDebug('EventSource connected successfully');
+                $('#status').text('Connected to status stream. Waiting for updates...');
+            };
+
             eventSource.onmessage = function(event) {
+                appendDebug('Received message: ' + event.data);
                 $('#status').text(event.data);
                 if (event.data === 'Download completed' || event.data.includes('Error')) {
+                    appendDebug('Closing EventSource due to completion or error');
                     eventSource.close();
                 }
             };
-            eventSource.onerror = function() {
-                $('#status').text('Error occurred while fetching status');
+
+            eventSource.onerror = function(event) {
+                appendDebug('EventSource error: ' + JSON.stringify(event));
+                appendDebug('EventSource readyState: ' + eventSource.readyState);
+                if (event.eventPhase === EventSource.CLOSED) {
+                    appendDebug('EventSource connection was closed');
+                }
+                $('#status').text('Error occurred while fetching status. ReadyState: ' + eventSource.readyState);
                 eventSource.close();
             };
+
+            // Timeout to close SSE after 5 minutes if no message received
+            setTimeout(function() {
+                if (eventSource.readyState !== EventSource.CLOSED) {
+                    appendDebug('Closing EventSource due to timeout');
+                    $('#status').text('Status update timed out. Please check server logs.');
+                    eventSource.close();
+                }
+            }, 300000); // 5 minutes
         }
     });
 </script>

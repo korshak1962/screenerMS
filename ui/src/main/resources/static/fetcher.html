@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Share Price Fetcher</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/flatpickr.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/flatpickr.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        form {
+            background-color: #f0f0f0;
+            padding: 20px;
+            border-radius: 5px;
+        }
+        label {
+            display: inline-block;
+            width: 100px;
+        }
+        input {
+            margin-bottom: 10px;
+            padding: 5px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        #result {
+            margin-top: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #4CAF50;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+<h1>Share Price Fetcher</h1>
+<form id="fetcherForm">
+    <label for="ticker">Ticker:</label>
+    <input type="text" id="ticker" name="ticker" required><br>
+
+    <label for="startDate">Start Date:</label>
+    <input type="text" id="startDate" name="startDate" required><br>
+
+    <label for="endDate">End Date:</label>
+    <input type="text" id="endDate" name="endDate" required><br>
+
+    <button type="submit">Fetch Share Prices</button>
+</form>
+
+<div id="result"></div>
+
+<script>
+    $(document).ready(function() {
+        flatpickr("#startDate", {
+            enableTime: true,
+            dateFormat: "Y-m-d H:i:S"
+        });
+
+        flatpickr("#endDate", {
+            enableTime: true,
+            dateFormat: "Y-m-d H:i:S"
+        });
+
+        $("#fetcherForm").submit(function(e) {
+            e.preventDefault();
+            var ticker = $("#ticker").val();
+            var startDate = $("#startDate").val();
+            var endDate = $("#endDate").val();
+
+            // Format dates to match server expectation
+            var formatDate = function(dateString) {
+                var date = new Date(dateString);
+                return date.getFullYear() + '-' +
+                       String(date.getMonth() + 1).padStart(2, '0') + '-' +
+                       String(date.getDate()).padStart(2, '0') + ' ' +
+                       String(date.getHours()).padStart(2, '0') + ':' +
+                       String(date.getMinutes()).padStart(2, '0') + ':' +
+                       String(date.getSeconds()).padStart(2, '0');
+            };
+
+            $.ajax({
+                url: "/api/fetcher/between",
+                method: "GET",
+                data: {
+                    ticker: ticker,
+                    startDate: formatDate(startDate),
+                    endDate: formatDate(endDate)
+                },
+                success: function(data) {
+                    var resultHtml = "<h2>Results</h2>";
+                    resultHtml += "<table><tr><th>Date</th><th>Open</th><th>High</th><th>Low</th><th>Close</th><th>Volume</th></tr>";
+                    data.forEach(function(item) {
+                        resultHtml += "<tr>";
+                        resultHtml += "<td>" + item.date + "</td>";
+                        resultHtml += "<td>" + item.open + "</td>";
+                        resultHtml += "<td>" + item.high + "</td>";
+                        resultHtml += "<td>" + item.low + "</td>";
+                        resultHtml += "<td>" + item.close + "</td>";
+                        resultHtml += "<td>" + item.volume + "</td>";
+                        resultHtml += "</tr>";
+                    });
+                    resultHtml += "</table>";
+                    $("#result").html(resultHtml);
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    $("#result").html("<p>Error: " + textStatus + " - " + errorThrown + "</p>");
+                    console.error(jqXHR.responseText);  // Log the full error response
+                }
+            });
+        });
+    });
+</script>
+</body>
+</html>

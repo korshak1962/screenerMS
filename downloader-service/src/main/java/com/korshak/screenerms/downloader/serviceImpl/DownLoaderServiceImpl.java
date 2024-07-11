@@ -3,7 +3,6 @@ package com.korshak.screenerms.downloader.serviceImpl;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import com.korshak.screenerms.downloader.service.DownLoaderService;
 import com.korshak.screenerms.dto.SharePriceDTO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,7 +31,7 @@ public class DownLoaderServiceImpl implements DownLoaderService {
     @Autowired
     private RestTemplate restTemplate;
 
-    public int downLoadData(String timeSeriesLabel, String ticker, String interval, String month) {
+    public String downLoadData(String timeSeriesLabel, String ticker, String interval, String month) {
         String fullAlphaUrl = baseUrl + timeSeriesLabel + "&symbol=" + ticker + "&interval=" + interval + "&month=" + month
                 + "&outputsize=full&apikey=" + apiKey;
         ResponseEntity<String> response = restTemplate.getForEntity(
@@ -60,9 +59,8 @@ public class DownLoaderServiceImpl implements DownLoaderService {
             long volume = Long.parseLong(dataNode.getValue().path("5. volume").asText());
             SharePriceDTO sharePrice = new SharePriceDTO(ticker, localDateTime, open, high, low, close, volume);
             intradayDataList.add(sharePrice);
-                System.out.println("sharePrice =" + sharePrice);
         }
         ResponseEntity<String> saved = restTemplate.postForEntity(storageSaveAllUrl, intradayDataList, String.class);
-        return saved.getBody().length();
+        return saved.getBody();
     }
 }
