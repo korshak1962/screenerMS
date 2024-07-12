@@ -21,7 +21,7 @@ import java.util.Map;
 @Service
 public class DownLoaderServiceImpl implements DownLoaderService {
 
-    @Value("${downloader.storage-save-all-url}")
+    @Value("${storage.api.save-all}")
     private String storageSaveAllUrl;
     @Value("${alpha.apiKey}")
     private String apiKey;

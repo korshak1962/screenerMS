@@ -1,10 +1,7 @@
 server:
-  port: 8081
   address: 0.0.0.0
 
 storage:
-  service:
-    url: http://storage-service:8083  # Assuming storage-service is running on port 8083
   api:
     between: ${storage.service.url}/storage/between
 
@@ -12,7 +9,7 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,info,metrics
+        include: '*'
   endpoint:
     health:
       show-details: always

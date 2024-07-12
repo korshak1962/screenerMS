@@ -1,16 +1,19 @@
 server:
-  port: 8082
   address: 0.0.0.0
 
 storage:
-  service:
-    url: http://storage-service:8083  # Assuming storage-service is running on port 8083
   api:
-    save-all: /storage/saveAll
-
-downloader:
-  storage-save-all-url: ${storage.service.url}${storage.api.save-all}
+    save-all: ${storage.service.url}/storage/saveAll
 
 alpha:
-    apiKey: 2NYM2EF6HJZUCXAL
-    baseUrl: https://www.alphavantage.co/query?function=
+  apiKey: 2NYM2EF6HJZUCXAL
+  baseUrl: https://www.alphavantage.co/query?function=
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: '*'
+  endpoint:
+    health:
+      show-details: always

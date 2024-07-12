@@ -1,0 +1,92 @@
+version: '3.8'
+
+services:
+  config-server:
+    build: ./config-server
+    ports:
+      - "8888:8888"
+    networks:
+      - screener-network
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8888/actuator/health" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  storage-service:
+    build: ./storage-service
+    ports:
+      - "8081:8081"
+    depends_on:
+      - config-server
+    environment:
+      SERVER_PORT: 8081
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_CLOUD_CONFIG_URI: http://config-server:8888
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-container:3306/screenerMS
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: admin1234
+      SPRING_DATASOURCE_DRIVER_CLASS_NAME: com.mysql.cj.jdbc.Driver
+      SPRING_JPA_DATABASE_PLATFORM: org.hibernate.dialect.MySQLDialect
+    networks:
+      - screener-network
+
+  downloader-service:
+    build: ./downloader-service
+    ports:
+      - "8082:8082"
+    depends_on:
+      - config-server
+      - storage-service
+    environment:
+      SERVER_PORT: 8082
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_CLOUD_CONFIG_URI: http://config-server:8888
+      STORAGE_SERVICE_URL: http://storage-service:8081
+    networks:
+      - screener-network
+
+  fetcher-service:
+    build: ./fetcher-service
+    ports:
+      - "8083:8083"
+    depends_on:
+      - config-server
+      - storage-service
+    environment:
+      SERVER_PORT: 8083
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_CLOUD_CONFIG_URI: http://config-server:8888
+      STORAGE_SERVICE_URL: http://storage-service:8081
+    networks:
+      - screener-network
+
+#  api:
+#    build: ./api
+#    ports:
+#      - "8080:8080"
+#    depends_on:
+#      - config-server
+#      - storage-service
+#      - downloader-service
+#      - fetcher-service
+#    environment:
+#      SPRING_PROFILES_ACTIVE: docker
+#      SPRING_CLOUD_CONFIG_URI: http://config-server:8888
+#    networks:
+#      - screener-network
+
+  ui:
+    build: ./ui
+    ports:
+      - "8080:80"
+    depends_on:
+      - downloader-service
+      - fetcher-service
+    networks:
+      - screener-network
+
+networks:
+  screener-network:
+    external: true
+    name: screener-network

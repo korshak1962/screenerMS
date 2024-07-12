@@ -4,10 +4,6 @@ server:
 spring:
   application:
     name: api-service
-  datasource:
-    url: jdbc:mysql://mysql:3306/alpha
-    username: root
-    password: admin1234
 
 # Add any other necessary configurations, such as:
 # - Service discovery settings
@@ -20,4 +16,4 @@ downloader:
     url: http://downloader-service:8082
 fetcher:
   service:
-    url: http://fetcher-service:8081
+    url: http://fetcher-service:8083
