@@ -1,4 +1,12 @@
 FROM openjdk:21-jdk-slim
+# Install diagnostic tools
+RUN apt-get update && apt-get install -y \
+    curl \
+    netcat-openbsd \
+    net-tools \
+    procps \
+    lsof \
+    && rm -rf /var/lib/apt/lists/*
 VOLUME /tmp
 ARG JAR_FILE=target/*.jar
 COPY ${JAR_FILE} app.jar

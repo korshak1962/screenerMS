@@ -27,7 +27,7 @@ public class DownloadController {
             @RequestParam String month) {
         try {
             YearMonth.parse(month); // Validate month format
-
+            System.out.println("downloader controller get request for:  "+month);
             // Start the download process asynchronously
             downloadFuture = CompletableFuture.supplyAsync(() ->
                     downLoaderService.downLoadData(timeSeriesLabel, ticker, interval, month)

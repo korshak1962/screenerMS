@@ -36,7 +36,7 @@ public class DownLoaderServiceImpl implements DownLoaderService {
                 + "&outputsize=full&apikey=" + apiKey;
         ResponseEntity<String> response = restTemplate.getForEntity(
                 fullAlphaUrl, String.class);
-
+        System.out.println("downloader service get request for: ticker "+ticker +" month "+month);
         ObjectMapper objectMapper = new ObjectMapper();
         JsonNode root = null;
         try {
