@@ -17,7 +17,8 @@ spec:
           image: ui:latest
           imagePullPolicy: Never
           ports:
-            - containerPort: 80
+            - containerPort: 5000
+
 ---
 apiVersion: v1
 kind: Service
@@ -29,5 +30,5 @@ spec:
   ports:
     - protocol: TCP
       port: 8080
-      targetPort: 80
+      targetPort: 5000
   type: NodePort

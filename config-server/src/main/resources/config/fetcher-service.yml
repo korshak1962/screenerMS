@@ -1,5 +1,5 @@
 server:
-  port: 8083
+  port: 8080
   address: 0.0.0.0
 
 storage:
@@ -14,4 +14,3 @@ management:
   endpoint:
     health:
       show-details: always
-      aaa: test

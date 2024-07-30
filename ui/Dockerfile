@@ -1,13 +1,15 @@
-FROM nginx:alpine
-# Install diagnostic tools
-RUN apt-get update && apt-get install -y \
-    curl \
-    netcat-openbsd \
-    net-tools \
-    procps \
-    lsof \
-    && rm -rf /var/lib/apt/lists/*
-COPY src/main/resources/static /usr/share/nginx/html
-COPY nginx.conf /etc/nginx/nginx.conf
-EXPOSE 80
-CMD ["nginx", "-g", "daemon off;"]
+FROM node:alpine
+
+# Install serve
+RUN npm install -g serve
+# Install curl
+RUN apk add --no-cache curl
+# Copy your static files
+COPY src/main/resources/static /app
+# Rename HTML files
+RUN for file in /app/*.html; do mv "$file" "${file%.html}"; done
+
+EXPOSE 5000
+
+# Start serve
+CMD ["serve", "-s", "/app", "-l", "5000"]

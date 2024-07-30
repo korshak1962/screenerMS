@@ -1,38 +1,38 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: downloader-service
+  name: fetcher-service
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: downloader-service
+      app: fetcher-service
   template:
     metadata:
       labels:
-        app: downloader-service
+        app: fetcher-service
     spec:
       containers:
-        - name: downloader-service
-          image: downloader-service:latest
+        - name: fetcher-service
+          image: fetcher-service:latest
           imagePullPolicy: Never
           ports:
-            - containerPort: 8082
+            - containerPort: 8083
           env:
             - name: SPRING_CLOUD_CONFIG_URI
               value: "http://config-server:8888"
             - name: STORAGE_SERVICE_URL
-              value: "http://storage-service:8081"
+              value: "http://storage-service:8080"
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: downloader-service
+  name: fetcher-service
 spec:
   selector:
-    app: downloader-service
+    app: fetcher-service
   ports:
     - protocol: TCP
-      port: 8082
-      targetPort: 8082
+      port: 8080
+      targetPort: 8080
   #type: NodePort
