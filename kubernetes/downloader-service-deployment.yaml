@@ -14,8 +14,9 @@ spec:
     spec:
       containers:
         - name: downloader-service
-          image: downloader-service:latest
-          imagePullPolicy: Never
+          image: korshak/ms-downloader-service:0.1
+          imagePullPolicy: IfNotPresent
+          #imagePullPolicy: Never
           ports:
             - containerPort: 8080
           env:

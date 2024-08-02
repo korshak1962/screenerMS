@@ -14,13 +14,15 @@ spec:
     spec:
       containers:
         - name: storage-service
-          image: storage-service:latest
-          imagePullPolicy: Never
+          image: korshak/ms-storage-service:0.1
+          imagePullPolicy: IfNotPresent
+          #imagePullPolicy: Never
           ports:
             - containerPort: 8080
           env:
             - name: SPRING_DATASOURCE_URL
-              value: jdbc:mysql://host.minikube.internal:3306/screenerMS
+              #value: jdbc:mysql://host.minikube.internal:3306/screenerMS
+              value: jdbc:mysql://screenerms.ch04l7jvi0kj.us-west-1.rds.amazonaws.com:3306/screenerMS
             - name: SPRING_JPA_DATABASE_PLATFORM
               value: "org.hibernate.dialect.MySQLDialect"
             - name: SPRING_JPA_HIBERNATE_DDL_AUTO

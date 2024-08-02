@@ -1,4 +1,5 @@
 FROM openjdk:21-jdk-slim
+#FROM cafapi/opensuse-jre21:latest
 # Install diagnostic tools
 RUN apt-get update && apt-get install -y \
     curl \

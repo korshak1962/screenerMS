@@ -14,8 +14,9 @@ spec:
     spec:
       containers:
         - name: ui
-          image: ui:latest
-          imagePullPolicy: Never
+          image: korshak/ms-ui:0.1
+          #imagePullPolicy: Never
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 5000
 
