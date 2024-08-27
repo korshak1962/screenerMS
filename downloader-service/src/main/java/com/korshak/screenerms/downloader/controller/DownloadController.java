@@ -1,9 +1,12 @@
 package com.korshak.screenerms.downloader.controller;
 
 import com.korshak.screenerms.downloader.service.DownLoaderService;
+import com.korshak.screenerms.downloader.serviceimpl.DownLoaderServiceImpl;
 import java.time.YearMonth;
 import java.time.format.DateTimeParseException;
 import java.util.concurrent.CompletableFuture;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -22,6 +25,8 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 @RestController
 @RequestMapping("/api/downloader")
 public class DownloadController {
+  private static final Logger logger = LoggerFactory.getLogger(DownLoaderServiceImpl.class);
+
   @SuppressWarnings("checkstyle:Indentation")
   @Autowired
   private DownLoaderService downLoaderService;
@@ -37,7 +42,7 @@ public class DownloadController {
       @RequestParam String month) {
     try {
       YearMonth.parse(month); // Validate month format
-      System.out.println("downloader controller get request for:  " + month);
+      logger.info("downloader controller get request for:  {}", month);
       // Start the download process asynchronously
       downloadFuture = CompletableFuture.supplyAsync(() ->
           downLoaderService.downLoadData(timeSeriesLabel, ticker, interval, month)
@@ -69,15 +74,15 @@ public class DownloadController {
 
         // Wait for the download to complete
         String result = downloadFuture.get();
-        System.out.println("result in status: " + result);
+        logger.info("result in status: " + result);
         // Send completion event
         emitter.send(SseEmitter.event().name("complete")
             .data("Download completed. " + result + " records saved."));
-        System.out.println("emitter.send: ");
+        logger.info("emitter.send: ");
         emitter.complete();
-        System.out.println("emitter.complete: ");
+        logger.info("emitter.complete: ");
       } catch (Exception e) {
-        System.out.println("Exception in status: " + e);
+        logger.info("Exception in status: " + e);
         emitter.completeWithError(e);
       }
     });
