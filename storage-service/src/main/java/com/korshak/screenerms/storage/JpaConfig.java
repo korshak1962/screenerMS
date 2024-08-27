@@ -10,8 +10,8 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 @EntityScan(basePackages = "com.korshak.screenerms.storage.dao")
 @ConfigurationProperties(prefix = "spring.datasource")
 public class JpaConfig {
-    private String url;
-    private String username;
-    private String password;
-    private String driverClassName;
+  private String url;
+  private String username;
+  private String password;
+  private String driverClassName;
 }
