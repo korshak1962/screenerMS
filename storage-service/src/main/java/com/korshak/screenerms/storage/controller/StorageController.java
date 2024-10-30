@@ -3,6 +3,7 @@ package com.korshak.screenerms.storage.controller;
 import com.korshak.screenerms.dto.SharePriceDTO;
 import com.korshak.screenerms.storage.dao.SharePrice;
 import com.korshak.screenerms.storage.dao.SharePriceRepository;
+import jakarta.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -23,6 +24,7 @@ public class StorageController {
   @Autowired
   private SharePriceRepository sharePriceRepository;
 
+  @Transactional
   @PostMapping("/saveAll")
   public ResponseEntity<String> saveAll(@RequestBody List<SharePriceDTO> sharePriceDTOs) {
     List<SharePrice> sharePrices = sharePriceDTOs.stream()
