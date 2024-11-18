@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -24,6 +25,7 @@ public class StorageController {
   private SharePriceRepository sharePriceRepository;
 
   @PostMapping("/saveAll")
+  @Transactional()
   public ResponseEntity<String> saveAll(@RequestBody List<SharePriceDTO> sharePriceDTOs) {
     List<SharePrice> sharePrices = sharePriceDTOs.stream()
         .map(this::convertToEntity)
@@ -35,6 +37,7 @@ public class StorageController {
   }
 
   @GetMapping("/between")
+  @Transactional(readOnly=true)
   public ResponseEntity<List<SharePriceDTO>> getSharePricesBetweenDates(
       @RequestParam String ticker,
       @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
